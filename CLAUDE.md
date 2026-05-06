@@ -46,6 +46,10 @@ page-stamp/
 ├── src/
 │   ├── sandbox/
 │   │   └── code.ts       # Sandbox (backend) — all Figma API calls
+│   ├── types/
+│   │   ├── domain.ts     # Domain types (PageStampMold, Position, PagingFormat, FigmaSectionInfo, FigmaComponentInfo)
+│   │   ├── messages.ts   # Communication types (UiMessage, SandboxMessage)
+│   │   └── index.ts      # Re-exports all types
 │   └── ui/
 │       ├── components/   # Reusable UI components
 │       ├── App.tsx       # Root UI component (plugin panel)
@@ -167,6 +171,23 @@ Always validate the message type when receiving via `postMessage` — ignore unk
 ### Dependencies
 
 Run `pnpm audit` before adding any new package to verify there are no known vulnerabilities.
+
+## Domain Concepts
+
+### PageStampMold
+
+`PageStampMold`는 스탬핑 작업 한 번을 완전히 기술하는 설정 객체다. UI에서 사용자가 선택한 모든 값을 담아 Sandbox로 전달되며, `apply` / `refresh` / `remove-all` 세 가지 작업의 공통 입력으로 사용된다.
+
+| 필드 | 타입 | 설명 |
+| --- | --- | --- |
+| `sectionId` | `string` | 페이지 번호를 붙일 대상 섹션의 Figma 노드 ID |
+| `componentId` | `string` | 사용할 컴포넌트의 Figma 노드 ID (`useDefaultComponent: true`이면 무시) |
+| `useDefaultComponent` | `boolean` | `true`이면 `PageNumber / Default` 컴포넌트를 자동 생성 |
+| `textLayerName` | `string` | 번호를 주입할 텍스트 레이어명 (기본값: `{page_number}`) |
+| `positioningMode` | `'ABSOLUTE' \| 'AUTO_LAYOUT'` | 인스턴스 삽입 방식 |
+| `position` | `Position ({ x, y })` | Absolute 모드일 때 적용할 좌표 |
+| `pagingFormat` | `PagingFormat` | 번호 표시 형식 (MVP: `'simple'` — 1, 2, 3) |
+| `startNumber` | `number` | 시작 번호 (기본값: 1) |
 
 ## Feature Specification
 

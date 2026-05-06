@@ -7,10 +7,13 @@
 
 ## 0. 공통 준비
 
-- [ ] **메시지 타입 인터페이스 정의** (`src/types.ts` 신규)
-  - UI → code.ts 메시지: `apply`, `refresh`, `remove-all`, `get-components`, `close`
-  - code.ts → UI 메시지: `section-list`, `component-list`, `done`, `error`
-  - 공유 설정 타입: `PluginSettings` (섹션 ID, 컴포넌트 ID, 텍스트 레이어명, 포지셔닝 모드, x/y, 번호 포맷, 시작 번호)
+- [x] **메시지 타입 인터페이스 정의** (`src/types/` 디렉토리 신규)
+  - `src/types/domain.ts`: `FigmaSectionInfo`, `FigmaComponentInfo`, `Position`, `PagingFormat`, `PageStampMold`
+  - `src/types/messages.ts`: `UiMessage` (UI → Sandbox), `SandboxMessage` (Sandbox → UI)
+  - `src/types/index.ts`: 전체 re-export
+  - UI → Sandbox 메시지: `apply`, `refresh`, `remove-all`, `get-components`, `close`
+  - Sandbox → UI 메시지: `section-list`, `component-list`, `done`, `error`
+  - 공유 설정 타입: `PageStampMold` (섹션 ID, 컴포넌트 ID, useDefaultComponent, 텍스트 레이어명, 포지셔닝 모드, position: {x,y}, pagingFormat, 시작 번호)
 
 ---
 
@@ -46,7 +49,7 @@
 
 ### 1-5. 컴포넌트 인스턴스 삽입 (적용하기)
 
-- [ ] `settings.sectionId`로 섹션 노드 조회 후 직계 자식 `FrameNode` 목록 추출
+- [ ] `mold.sectionId`로 섹션 노드 조회 후 직계 자식 `FrameNode` 목록 추출
 - [ ] 추출된 프레임을 TL 정렬
 - [ ] 각 프레임에 컴포넌트 인스턴스 생성 (`component.createInstance()`)
 - [ ] **Absolute 모드**: `instance.layoutPositioning = 'ABSOLUTE'` 후 x, y 설정
@@ -58,8 +61,8 @@
 
 ### 1-6. 번호 갱신 (다시 적용)
 
-- [ ] `refreshPageNumbers(settings)` 함수 구현 (spec 6.5 참고)
-  - `settings.sectionId`로 섹션 직계 자식 프레임 목록 추출
+- [ ] `refreshPageNumbers(mold)` 함수 구현 (spec 6.5 참고)
+  - `mold.sectionId`로 섹션 직계 자식 프레임 목록 추출
   - 전체 프레임을 TL 정렬 → 인덱스 기반 번호 결정
   - 각 프레임에서 `getPluginData('isPageNumber') === 'true'` 인스턴스 탐색
   - 인스턴스 없으면 건너뜀 (재삽입 안 함)
@@ -67,8 +70,8 @@
 
 ### 1-7. 전체 제거
 
-- [ ] `removeAllPageNumbers(settings)` 함수 구현
-  - `settings.sectionId`로 섹션 직계 자식 프레임 목록 추출
+- [ ] `removeAllPageNumbers(mold)` 함수 구현
+  - `mold.sectionId`로 섹션 직계 자식 프레임 목록 추출
   - 각 프레임에서 `isPageNumber` 태그된 노드 탐색 후 `node.remove()`
 
 ### 1-8. 메시지 핸들러 연결

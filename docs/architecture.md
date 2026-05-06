@@ -88,7 +88,7 @@ sequenceDiagram
     Note over U: 컴포넌트 드롭다운에서 선택 → componentId UI 상태에 저장
 
     Note over U,F: 적용하기
-    U->>UB: send('apply', settings)
+    U->>UB: send('apply', mold)
     UB->>SB: parent.postMessage()
     SB->>C: on('apply') 핸들러 호출
     C->>F: section.findChildren(FRAME)
@@ -138,7 +138,7 @@ graph TD
         SBListen["listen()\nfigma.ui.onmessage 바인딩\n→ 등록된 핸들러 디스패치"]
     end
 
-    App -- "UIBridge.send('apply', settings)" --> UISend
+    App -- "UIBridge.send('apply', mold)" --> UISend
     App -- "UIBridge.on('done', handler)" --> UIOn
     UIListen -- "handlers[type](payload)" --> App
 
@@ -152,7 +152,9 @@ graph TD
 | --- | --- |
 | `src/ui/bridge.ts` | UIBridge 모듈 — UI 스레드에서 import |
 | `src/sandbox/bridge.ts` | SandboxBridge 모듈 — Plugin Sandbox에서 import |
-| `src/types.ts` | 메시지 타입 맵 (UIMessageMap, SandboxMessageMap) |
+| `src/types/domain.ts` | 도메인 타입 (FigmaSectionInfo, FigmaComponentInfo, Position, PagingFormat, PageStampMold) |
+| `src/types/messages.ts` | 통신 타입 (UiMessage, SandboxMessage) |
+| `src/types/index.ts` | 전체 re-export |
 
 ---
 
@@ -194,39 +196,46 @@ graph TD
 
 ```mermaid
 classDiagram
-    class PluginSettings {
+    class PageStampMold {
         sectionId: string
-        componentId: string | 'auto'
+        componentId: string
+        useDefaultComponent: boolean
         textLayerName: string
-        positioning: 'ABSOLUTE' | 'AUTO_LAYOUT'
-        x: number
-        y: number
+        positioningMode: 'ABSOLUTE' | 'AUTO_LAYOUT'
+        position: Position
+        pagingFormat: PagingFormat
         startNumber: number
     }
 
-    class UIMessage {
+    class Position {
+        x: number
+        y: number
+    }
+
+    class UiMessage {
         <<union>>
         type: 'apply' | 'refresh' | 'remove-all' | 'get-components' | 'close'
-        payload: PluginSettings
+        mold: PageStampMold
     }
 
     class SandboxMessage {
         <<union>>
         type: 'section-list' | 'component-list' | 'done' | 'error'
-        payload: SectionInfo[] | ComponentInfo[] | ErrorInfo
+        payload: FigmaSectionInfo[] | FigmaComponentInfo[] | ErrorInfo
     }
 
-    class SectionInfo {
+    class FigmaSectionInfo {
         id: string
         name: string
     }
 
-    class ComponentInfo {
+    class FigmaComponentInfo {
         id: string
         name: string
     }
 
-    UIMessage --> PluginSettings : contains
-    SandboxMessage --> SectionInfo : variant
-    SandboxMessage --> ComponentInfo : variant
+    PageStampMold --> Position : contains
+    UiMessage --> PageStampMold : contains
+    SandboxMessage --> FigmaSectionInfo : variant
+    SandboxMessage --> FigmaComponentInfo : variant
 ```
