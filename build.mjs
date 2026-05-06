@@ -19,7 +19,7 @@ const inlineHtmlPlugin = {
     build.onEnd((result) => {
       if (result.errors.length > 0) return;
       const js = result.outputFiles[0].text;
-      const template = readFileSync('src/ui.html', 'utf-8');
+      const template = readFileSync('src/ui/ui.html', 'utf-8');
       const html = template.replace('</body>', `<script>${js}</script>\n</body>`);
       writeFileSync('dist/ui.html', html);
       console.log('[ui] dist/ui.html built');
@@ -29,7 +29,7 @@ const inlineHtmlPlugin = {
 
 /** @type {esbuild.BuildOptions} */
 const codeOptions = {
-  entryPoints: ['src/code.ts'],
+  entryPoints: ['src/sandbox/code.ts'],
   bundle: true,
   outfile: 'dist/code.js',
   platform: 'browser',
@@ -39,7 +39,7 @@ const codeOptions = {
 
 /** @type {esbuild.BuildOptions} */
 const uiOptions = {
-  entryPoints: ['src/ui.tsx'],
+  entryPoints: ['src/ui/ui.tsx'],
   bundle: true,
   write: false,
   platform: 'browser',

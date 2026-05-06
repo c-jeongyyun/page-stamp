@@ -12,7 +12,7 @@ graph TD
 
         subgraph Sandbox["Plugin Sandbox (dist/code.js)"]
             SandboxBridge["SandboxBridge\nsrc/sandbox/bridge.ts"]
-            Selection["Frame Selection\nfigma.on('selectionchange')"]
+            SectionQuery["getSections()\n섹션 목록 조회"]
             TL["sortByTL()\nTL 방향 정렬"]
             CompQuery["getComponents()\n컴포넌트 목록 조회"]
             CompCreate["createDefaultComponent()\n기본 컴포넌트 생성"]
@@ -36,11 +36,13 @@ graph TD
 
     SandboxBridge -- "on('apply')" --> Apply
     SandboxBridge -- "on('refresh')" --> Refresh
-    SandboxBridge -- "on('removeAll')" --> Remove
-    SandboxBridge -- "on('getComponents')" --> CompQuery
+    SandboxBridge -- "on('remove-all')" --> Remove
+    SandboxBridge -- "on('get-components')" --> CompQuery
 
-    Selection --> TL
-    TL --> SandboxBridge
+    Apply --> SectionQuery
+    Refresh --> SectionQuery
+    Remove --> SectionQuery
+    SectionQuery --> TL
 
     CompQuery --> Components
     CompCreate --> Components
@@ -50,7 +52,7 @@ graph TD
     Refresh --> Instances
     Remove --> PluginData
     Remove --> Instances
-    Canvas --> Selection
+    Canvas --> SectionQuery
 ```
 
 ---
@@ -68,17 +70,28 @@ sequenceDiagram
     Note over U,F: 플러그인 시작
     C->>F: figma.showUI()
     SB->>F: findAllWithCriteria(COMPONENT)
-    SB->>UB: send('componentList', [...])
-    UB->>U: on('componentList') 핸들러 호출
-    F->>C: selectionchange 이벤트
-    C->>SB: send('selectionUpdate', { count, frames })
-    SB->>UB: figma.ui.postMessage()
-    UB->>U: on('selectionUpdate') 핸들러 호출
+    SB->>UB: send('component-list', [...])
+    UB->>U: on('component-list') 핸들러 호출
+    SB->>F: findAllWithCriteria(SECTION)
+    SB->>UB: send('section-list', [...])
+    UB->>U: on('section-list') 핸들러 호출
+
+    Note over U,F: 컴포넌트 목록 새로고침 (필요 시)
+    U->>UB: send('get-components')
+    UB->>SB: parent.postMessage()
+    SB->>C: on('get-components') 핸들러 호출
+    C->>F: findAllWithCriteria(COMPONENT)
+    SB->>UB: send('component-list', [...])
+    UB->>U: on('component-list') 핸들러 호출
+
+    Note over U: 섹션 드롭다운에서 선택 → sectionId UI 상태에 저장
+    Note over U: 컴포넌트 드롭다운에서 선택 → componentId UI 상태에 저장
 
     Note over U,F: 적용하기
     U->>UB: send('apply', settings)
     UB->>SB: parent.postMessage()
     SB->>C: on('apply') 핸들러 호출
+    C->>F: section.findChildren(FRAME)
     C->>F: sortByTL(frames)
     C->>F: component.createInstance()
     C->>F: instance.layoutPositioning = 'ABSOLUTE'
@@ -98,9 +111,9 @@ sequenceDiagram
     UB->>U: on('done') 핸들러 호출
 
     Note over U,F: 전체 제거
-    U->>UB: send('removeAll')
+    U->>UB: send('remove-all')
     UB->>SB: parent.postMessage()
-    SB->>C: on('removeAll') 핸들러 호출
+    SB->>C: on('remove-all') 핸들러 호출
     C->>F: findAll(isPageNumber)
     C->>F: node.remove()
     SB->>UB: send('done')
@@ -129,7 +142,7 @@ graph TD
     App -- "UIBridge.on('done', handler)" --> UIOn
     UIListen -- "handlers[type](payload)" --> App
 
-    SBOn -- "handlers[type](payload)" --> Handlers["code.ts 핸들러들\napply / refresh / removeAll / getComponents"]
+    SBOn -- "handlers[type](payload)" --> Handlers["code.ts 핸들러들\napply / refresh / remove-all / get-components"]
     SBSend --> FigmaUIPostMessage["figma.ui.postMessage()"]
 ```
 
@@ -153,8 +166,8 @@ graph TD
     App --> Step4
     App --> Actions
 
-    Step1["STEP 1\n프레임 선택 확인"]
-    Step1 --> FrameCount["선택된 프레임 수\n(selectionUpdate 반응)"]
+    Step1["STEP 1\n섹션 선택"]
+    Step1 --> SectionDropdown["섹션 드롭다운\n(section-list 반응)"]
 
     Step2["STEP 2\n컴포넌트 선택"]
     Step2 --> Radio{"라디오 선택"}
@@ -182,6 +195,7 @@ graph TD
 ```mermaid
 classDiagram
     class PluginSettings {
+        sectionId: string
         componentId: string | 'auto'
         textLayerName: string
         positioning: 'ABSOLUTE' | 'AUTO_LAYOUT'
@@ -192,19 +206,19 @@ classDiagram
 
     class UIMessage {
         <<union>>
-        type: 'apply' | 'refresh' | 'removeAll' | 'getComponents' | 'close'
+        type: 'apply' | 'refresh' | 'remove-all' | 'get-components' | 'close'
         payload: PluginSettings
     }
 
     class SandboxMessage {
         <<union>>
-        type: 'selectionUpdate' | 'componentList' | 'done' | 'error'
-        payload: SelectionInfo | ComponentInfo[] | ErrorInfo
+        type: 'section-list' | 'component-list' | 'done' | 'error'
+        payload: SectionInfo[] | ComponentInfo[] | ErrorInfo
     }
 
-    class SelectionInfo {
-        count: number
-        frameNames: string[]
+    class SectionInfo {
+        id: string
+        name: string
     }
 
     class ComponentInfo {
@@ -213,6 +227,6 @@ classDiagram
     }
 
     UIMessage --> PluginSettings : contains
-    SandboxMessage --> SelectionInfo : variant
+    SandboxMessage --> SectionInfo : variant
     SandboxMessage --> ComponentInfo : variant
 ```
