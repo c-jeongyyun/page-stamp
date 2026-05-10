@@ -8,6 +8,7 @@ description: |
 allowed-tools:
   - Bash
   - AskUserQuestion
+model: haiku
 ---
 
 # /commit — Conventional Commits Message Generator
@@ -21,6 +22,7 @@ Generate a Conventional Commits 1.0.0 compliant commit message from current git 
 Run `git diff --staged` to inspect staged changes.
 
 If nothing is staged, run `git diff HEAD` and notify the user:
+
 > "No staged changes found. Analyzing all unstaged changes instead. Consider running `git add` to stage specific files before committing."
 
 Also run `git status --short` to get a file-level overview.
@@ -29,28 +31,28 @@ Also run `git status --short` to get a file-level overview.
 
 Analyze each changed file and its diff. Assign one of the supported types based on the nature of the change:
 
-| Type | When to use |
-|------|-------------|
-| `feat` | New feature or capability added |
-| `fix` | Bug fix |
-| `docs` | Documentation only (README, comments, specs) |
-| `style` | Formatting, whitespace, semicolons — no logic change |
-| `refactor` | Code restructuring with no behavior change |
-| `test` | Adding or modifying tests |
-| `chore` | Build scripts, package management, miscellaneous maintenance |
-| `build` | Build system or external dependency changes |
-| `ci` | CI/CD pipeline configuration |
-| `perf` | Performance improvement |
-| `revert` | Reverting a previous commit |
-| `init` | Initial project setup |
-| `wip` | Work in progress — incomplete, temporary commit |
-| `hotfix` | Urgent production fix |
-| `release` | Release version bump or changelog |
-| `config` | Configuration file changes (env, settings, etc.) |
-| `ui` | Visual or UX changes |
-| `api` | API contract changes |
-| `db` | Database schema or migration changes |
-| `security` | Security-related fixes or hardening |
+| Type       | When to use                                                  |
+| ---------- | ------------------------------------------------------------ |
+| `feat`     | New feature or capability added                              |
+| `fix`      | Bug fix                                                      |
+| `docs`     | Documentation only (README, comments, specs)                 |
+| `style`    | Formatting, whitespace, semicolons — no logic change         |
+| `refactor` | Code restructuring with no behavior change                   |
+| `test`     | Adding or modifying tests                                    |
+| `chore`    | Build scripts, package management, miscellaneous maintenance |
+| `build`    | Build system or external dependency changes                  |
+| `ci`       | CI/CD pipeline configuration                                 |
+| `perf`     | Performance improvement                                      |
+| `revert`   | Reverting a previous commit                                  |
+| `init`     | Initial project setup                                        |
+| `wip`      | Work in progress — incomplete, temporary commit              |
+| `hotfix`   | Urgent production fix                                        |
+| `release`  | Release version bump or changelog                            |
+| `config`   | Configuration file changes (env, settings, etc.)             |
+| `ui`       | Visual or UX changes                                         |
+| `api`      | API contract changes                                         |
+| `db`       | Database schema or migration changes                         |
+| `security` | Security-related fixes or hardening                          |
 
 ### Step 3: Single type vs. mixed types
 
@@ -58,6 +60,7 @@ Analyze each changed file and its diff. Assign one of the supported types based 
 Generate one commit message and output it.
 
 **If changes span multiple types:**
+
 - Group files by their type
 - Announce that the changes should be split into separate commits
 - Output one commit message per type group, in priority order (feat/fix first, then others)
@@ -91,12 +94,13 @@ Follow Conventional Commits 1.0.0 strictly:
 ```
 
 **Rules:**
+
 - `type`: one of the supported types above
 - `scope`: optional, lowercase, describes the affected module/area (e.g., `ui`, `parser`, `auth`)
-- `description`: **noun form, English, 50 chars or less** — describe *what* was added/changed, not *why*
+- `description`: **noun form, English, 50 chars or less** — describe _what_ was added/changed, not _why_
   - Good: `addition of retry logic`, `removal of deprecated endpoint`
   - Bad: `add retry logic`, `removes deprecated endpoint`
-- `body`: optional; explain *why* the change was made, wrap at 72 chars
+- `body`: optional; explain _why_ the change was made, wrap at 72 chars
 - `footer`: optional; use for `BREAKING CHANGE:` or issue references like `Closes #42`
 
 **Breaking changes:** Add `!` after type/scope and include `BREAKING CHANGE:` in footer.
@@ -125,6 +129,7 @@ EOF
 
 **If the user approves (mixed types):**
 For each group in order:
+
 1. Stage the listed files: `git add <files>`
 2. Run `git commit -m "..."`
 3. Confirm each commit succeeded before proceeding to the next
@@ -135,11 +140,13 @@ Ask what they'd like to change, update the message, and ask again before committ
 ## Examples
 
 ### Single type
+
 ```
 feat(ui): addition of page number preview panel
 ```
 
 ### With body
+
 ```
 fix(parser): correction of frame sort order for RTL layouts
 
