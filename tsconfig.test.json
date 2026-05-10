@@ -1,7 +1,7 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "types": ["vitest/globals", "plugin-typings"],
+    "types": ["vitest/globals", "plugin-typings", "@testing-library/jest-dom"],
     "moduleResolution": "node",
     "noEmit": true
   },
