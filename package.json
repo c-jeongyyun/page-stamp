@@ -2,8 +2,9 @@
   "name": "page-stamp",
   "version": "1.0.0",
   "description": "Figma plugin - Page Stamp",
+  "type": "module",
   "scripts": {
-    "build": "node build.mjs",
+    "build": "pnpm typecheck && node build.mjs",
     "watch": "node build.mjs --watch",
     "typecheck": "tsc --noEmit",
     "lint": "oxlint src --deny-warnings",
@@ -11,16 +12,19 @@
     "format": "oxfmt src",
     "format:check": "oxfmt --check src",
     "test": "vitest run",
-    "prepare": "husky"
+    "prepare": "husky",
+    "branch": "tsx scripts/create-branch.ts"
   },
   "dependencies": {
     "preact": "^10.25.4"
   },
   "devDependencies": {
+    "@clack/prompts": "^1.3.0",
     "@figma/plugin-typings": "^1.104.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/preact": "^3.2.4",
     "@testing-library/user-event": "^14.6.1",
+    "@types/node": "^25.6.2",
     "husky": "^9.1.7",
     "jsdom": "^29.1.1",
     "lint-staged": "^17.0.3",
@@ -28,6 +32,7 @@
     "oxfmt": "^0.48.0",
     "oxlint": "^1.63.0",
     "rolldown": "^1.0.0",
+    "tsx": "^4.21.0",
     "typescript": "^5.7.3",
     "vitest": "^4.1.5"
   },
