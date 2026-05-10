@@ -16,6 +16,12 @@ export default defineConfig({
         oxc: {
           jsx: { importSource: 'preact' },
         },
+        resolve: {
+          alias: {
+            react: 'preact/compat',
+            'react-dom': 'preact/compat',
+          },
+        },
         test: {
           name: 'ui',
           globals: true,
