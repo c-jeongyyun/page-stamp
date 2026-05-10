@@ -1,5 +1,4 @@
-
-# What I Did  
+# What I Did
 
 ## 260504
 
@@ -23,3 +22,13 @@
 
 1. CLAUDE.md 수정 - 금지 사항, 작업 flow, commit 규칙, branch 명 규칙, 디렉토리 구조, 기타 컨벤션
 2. 코드 리뷰 담당 agent 생성
+3. 타입 작업. 네이밍 수정 및 내용의 성질(도메인/통신)에 맞게 파일 분리
+
+## 260507
+
+1. 피그마와 연속적인 경험을 제공하기 위해, figma의 디자인 시스템에 대한 내용이 포함된 DESIGN.md 파일 추가.
+
+## 260509
+
+1. pre-commit 설정 추가: develop에 자꾸 커밋하는 실수하여 이를 차단 & lint, test 실행하도록
+2. sandbox 코드 - layered architecture로 구조 구체화. 구현 실행.

@@ -1,0 +1,32 @@
+#!/bin/sh
+
+# 현재 브랜치 이름 가져오기
+branch="$(git rev-parse --abbrev-ref HEAD)"
+
+# 1. develop 브랜치 커밋 방지 및 Squash Merge 확인
+if [ "$branch" = "develop" ]; then
+  echo "⚠️  경고: 현재 'develop' 브랜치에서 커밋을 시도하고 있습니다."
+  
+  # 사용자에게 squash merge 여부 확인 (터미널 입력 강제)
+  printf "현재 작업이 Squash Merge 입니까? (y/n): "
+  read -r response < /dev/tty
+
+  case "$response" in
+    [yY][eE][sS]|[yY])
+      echo "✅ Squash Merge로 확인되었습니다. 계속 진행합니다..."
+      ;;
+    *)
+      echo "❌ Error: 'develop' 브랜치에 직접 커밋할 수 없습니다."
+      echo "새로운 feature 브랜치를 생성하거나 작업을 확인해 주세요."
+      exit 1
+      ;;
+  esac
+fi
+
+# 2. Lint 및 테스트 실행
+echo "🔍 Running lint-staged and tests..."
+
+pnpm exec lint-staged || { echo "❌ Lint check failed."; exit 1; }
+pnpm test || { echo "❌ Tests failed."; exit 1; }
+
+exit 0

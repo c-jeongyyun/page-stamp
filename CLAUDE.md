@@ -31,13 +31,14 @@ Page Stamp is a **Figma plugin** that automates page numbering on slide designs.
 
 ### Tech Stack
 
-| Layer | Technology |
-| --- | --- |
-| Runtime | Figma Plugin Sandbox + iframe (UI) |
-| UI Framework | Preact 10 (`react` → `preact/compat` alias) |
-| Language | TypeScript 5 (strict mode) |
-| Bundler | esbuild (custom `inlineHtmlPlugin`) |
-| Package Manager | pnpm |
+| Layer           | Technology                                  |
+| --------------- | ------------------------------------------- |
+| Runtime         | Figma Plugin Sandbox + iframe (UI)          |
+| UI Framework    | Preact 10 (`react` → `preact/compat` alias) |
+| Language        | TypeScript 5 (strict mode)                  |
+| Bundler         | Rolldown (Oxc-based bundler)                |
+| Lint / Format   | oxlint / oxfmt                              |
+| Package Manager | pnpm                                        |
 
 ### Folder Structure
 
@@ -57,7 +58,7 @@ page-stamp/
 │       └── ui.html       # HTML template; bundled JS is inlined here at build time
 ├── dist/                 # Build output (code.js, ui.html)
 ├── docs/                 # Architecture, spec, tasks
-├── build.mjs             # esbuild pipeline
+├── build.mjs             # Rolldown build pipeline
 ├── manifest.json         # Figma plugin manifest
 ├── package.json
 └── tsconfig.json
@@ -65,7 +66,7 @@ page-stamp/
 
 ### Build Pipeline (`build.mjs`)
 
-Uses esbuild with a custom `inlineHtmlPlugin`:
+Uses Rolldown:
 
 1. Bundles `src/sandbox/code.ts` → `dist/code.js`
 2. Bundles `src/ui/ui.tsx` → inline JS, then injects into `src/ui/ui.html` → `dist/ui.html`
@@ -78,18 +79,20 @@ For full architecture, message flow, and data model details, refer to [`docs/arc
 pnpm build       # One-time build → dist/code.js + dist/ui.html
 pnpm watch       # Watch mode for active development
 pnpm typecheck   # TypeScript type check (no emit)
+pnpm lint        # oxlint
+pnpm format      # oxfmt
+pnpm test        # Vitest
 ```
-
-No test or lint commands are configured yet.
 
 ## Conventions
 
 - **TypeScript strict mode** — `strict: true` is enabled; no implicit any, no unchecked types
-- **Preact with React syntax** — write standard React/JSX; esbuild aliases `react` → `preact/compat` and `react-dom` → `preact/compat` at build time. Do not import from `preact` directly.
+- **Preact with React syntax** — write standard React/JSX; Rolldown aliases `react` → `preact/compat` and `react-dom` → `preact/compat` at build time. Do not import from `preact` directly.
 - **Branch** — Run the `/branch` skill before starting any task to create a dedicated branch. Never work directly on `main` or `develop`.
 - **Merge Strategy** — `develop` → `main`: 기본 merge. Feature 등 기타 브랜치 → `develop`: squash merge.
 - **TDD** — Write tests first, then implement. Move to the next step only after all tests pass.
-- **Lint & Format** — Run ESLint and Prettier after every task.
+- **Lint & Format** — Run oxlint and oxfmt after every task.
+- **UI Design** — UI 컴포넌트를 작성하거나 수정할 때는 반드시 [`docs/DESIGN.md`](docs/DESIGN.md)를 먼저 확인하고 그 가이드라인을 준수한다.
 - **Code Review** — After every task, invoke the `code-reviewer` subagent on all changed files before committing. Address any Critical or Major issues before proceeding.
 - **Commit** — Run the `/commit` skill after every task to commit the changes.
 
@@ -146,10 +149,10 @@ const [status, setStatus] = useState<'idle' | 'loading' | 'error'>('idle');
 
 Validate before calling Figma APIs — do not rely on catch alone:
 
-| Condition | Check |
-| --- | --- |
-| No frames in section | extracted frame list is empty |
-| Component deleted | `figma.getNodeById(id) === null` |
+| Condition             | Check                                      |
+| --------------------- | ------------------------------------------ |
+| No frames in section  | extracted frame list is empty              |
+| Component deleted     | `figma.getNodeById(id) === null`           |
 | Instance node missing | plugin metadata lookup returns `undefined` |
 
 ## Security (Figma Plugin Context)
@@ -178,16 +181,16 @@ Run `pnpm audit` before adding any new package to verify there are no known vuln
 
 `PageStampMold`는 스탬핑 작업 한 번을 완전히 기술하는 설정 객체다. UI에서 사용자가 선택한 모든 값을 담아 Sandbox로 전달되며, `apply` / `refresh` / `remove-all` 세 가지 작업의 공통 입력으로 사용된다.
 
-| 필드 | 타입 | 설명 |
-| --- | --- | --- |
-| `sectionId` | `string` | 페이지 번호를 붙일 대상 섹션의 Figma 노드 ID |
-| `componentId` | `string` | 사용할 컴포넌트의 Figma 노드 ID (`useDefaultComponent: true`이면 무시) |
-| `useDefaultComponent` | `boolean` | `true`이면 `PageNumber / Default` 컴포넌트를 자동 생성 |
-| `textLayerName` | `string` | 번호를 주입할 텍스트 레이어명 (기본값: `{page_number}`) |
-| `positioningMode` | `'ABSOLUTE' \| 'AUTO_LAYOUT'` | 인스턴스 삽입 방식 |
-| `position` | `Position ({ x, y })` | Absolute 모드일 때 적용할 좌표 |
-| `pagingFormat` | `PagingFormat` | 번호 표시 형식 (MVP: `'simple'` — 1, 2, 3) |
-| `startNumber` | `number` | 시작 번호 (기본값: 1) |
+| 필드                  | 타입                          | 설명                                                                   |
+| --------------------- | ----------------------------- | ---------------------------------------------------------------------- |
+| `sectionId`           | `string`                      | 페이지 번호를 붙일 대상 섹션의 Figma 노드 ID                           |
+| `componentId`         | `string`                      | 사용할 컴포넌트의 Figma 노드 ID (`useDefaultComponent: true`이면 무시) |
+| `useDefaultComponent` | `boolean`                     | `true`이면 `PageNumber / Default` 컴포넌트를 자동 생성                 |
+| `textLayerName`       | `string`                      | 번호를 주입할 텍스트 레이어명 (기본값: `{page_number}`)                |
+| `positioningMode`     | `'ABSOLUTE' \| 'AUTO_LAYOUT'` | 인스턴스 삽입 방식                                                     |
+| `position`            | `Position ({ x, y })`         | Absolute 모드일 때 적용할 좌표                                         |
+| `pagingFormat`        | `PagingFormat`                | 번호 표시 형식 (MVP: `'simple'` — 1, 2, 3)                             |
+| `startNumber`         | `number`                      | 시작 번호 (기본값: 1)                                                  |
 
 ## Feature Specification
 

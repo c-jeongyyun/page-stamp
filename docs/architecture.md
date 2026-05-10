@@ -11,14 +11,36 @@ graph TD
         end
 
         subgraph Sandbox["Plugin Sandbox (dist/code.js)"]
-            SandboxBridge["SandboxBridge\nsrc/sandbox/bridge.ts"]
-            SectionQuery["getSections()\n섹션 목록 조회"]
-            TL["sortByTL()\nTL 방향 정렬"]
-            CompQuery["getComponents()\n컴포넌트 목록 조회"]
-            CompCreate["createDefaultComponent()\n기본 컴포넌트 생성"]
-            Apply["applyPageNumbers()\n인스턴스 삽입"]
-            Refresh["refreshPageNumbers()\n번호 갱신"]
-            Remove["removeAllPageNumbers()\n전체 제거"]
+            CodeTS["code.ts\n진입점 — 싱글톤 생성·연결"]
+
+            subgraph Layer1["Layer 1: 통신 레이어"]
+                SandboxBridge["SandboxBridge\nsrc/sandbox/bridge.ts\n메시지 송수신 추상화"]
+                PluginController["PluginController\nsrc/sandbox/pluginController.ts\n핸들러 등록 + 조율"]
+            end
+
+            subgraph Layer2["Layer 2: 서비스 레이어"]
+                Service["PageStampService\nsrc/sandbox/pageStampService.ts"]
+                SectionQuery["getSections()\n섹션 목록 조회"]
+                CompQuery["getComponents()\n컴포넌트 목록 조회"]
+                CompCreate["createDefaultComponent()\n기본 컴포넌트 생성"]
+                TL["sortByTL()\nTL 방향 정렬"]
+                Apply["applyPageNumbers()\n인스턴스 삽입"]
+                Refresh["refreshPageNumbers()\n번호 갱신"]
+                Remove["removeAllPageNumbers()\n전체 제거"]
+            end
+
+            CodeTS --> SandboxBridge
+            CodeTS --> PluginController
+            CodeTS --> Service
+            PluginController --> SandboxBridge
+            PluginController --> Service
+            Service --> SectionQuery
+            Service --> CompQuery
+            Service --> CompCreate
+            Service --> TL
+            Service --> Apply
+            Service --> Refresh
+            Service --> Remove
         end
 
         subgraph FigmaAPI["Figma API"]
@@ -148,13 +170,16 @@ graph TD
 
 ### 파일 위치
 
-| 파일 | 역할 |
-| --- | --- |
-| `src/ui/bridge.ts` | UIBridge 모듈 — UI 스레드에서 import |
-| `src/sandbox/bridge.ts` | SandboxBridge 모듈 — Plugin Sandbox에서 import |
-| `src/types/domain.ts` | 도메인 타입 (FigmaSectionInfo, FigmaComponentInfo, Position, PagingFormat, PageStampMold) |
-| `src/types/messages.ts` | 통신 타입 (UiMessage, SandboxMessage) |
-| `src/types/index.ts` | 전체 re-export |
+| 파일                              | 레이어           | 역할                                                                                      |
+| --------------------------------- | ---------------- | ----------------------------------------------------------------------------------------- |
+| `src/sandbox/code.ts`             | Entry Point      | 싱글톤 생성·연결, 초기 데이터 전송                                                        |
+| `src/sandbox/bridge.ts`           | Layer 1 (통신)   | SandboxBridge — 메시지 송수신 원시 추상화                                                 |
+| `src/sandbox/pluginController.ts` | Layer 1 (통신)   | PluginController — 핸들러 등록·조율, PageStampService 연결                                |
+| `src/sandbox/pageStampService.ts` | Layer 2 (서비스) | PageStampService — 섹션·컴포넌트 조회, 인스턴스 삽입·갱신·제거 등 Figma API 로직          |
+| `src/ui/bridge.ts`                | UI               | UIBridge 모듈 — UI 스레드에서 import (Task 2: Frontend 범위)                              |
+| `src/types/domain.ts`             | —                | 도메인 타입 (FigmaSectionInfo, FigmaComponentInfo, Position, PagingFormat, PageStampMold) |
+| `src/types/messages.ts`           | —                | 통신 타입 (UiMessage, SandboxMessage)                                                     |
+| `src/types/index.ts`              | —                | 전체 re-export                                                                            |
 
 ---
 
