@@ -27,24 +27,29 @@ export function usePluginBridge() {
   useEffect(() => {
     const bridge = new UIBridge();
     bridgeRef.current = bridge;
+    let doneTimerId: ReturnType<typeof setTimeout> | null = null;
 
     bridge.on('section-list', ({ sections: s }) => setSections(s));
     bridge.on('component-list', ({ components: c }) => setComponents(c));
     bridge.on('done', () => {
       setStatus('done');
-      setTimeout(() => setStatus('idle'), DONE_RESET_DELAY_MS);
+      doneTimerId = setTimeout(() => setStatus('idle'), DONE_RESET_DELAY_MS);
     });
     bridge.on('error', ({ message }) => {
       setStatus('error');
       setErrorMessage(message);
     });
 
-    return bridge.listen();
+    const unlisten = bridge.listen();
+    return () => {
+      unlisten();
+      if (doneTimerId !== null) clearTimeout(doneTimerId);
+    };
   }, []);
 
   const isValid = (() => {
     if (!sectionId) return false;
-    if (!useDefaultComponent && (!componentId || !textLayerName)) return false;
+    if (!useDefaultComponent && (!componentId || !textLayerName.trim())) return false;
     if (startNumber < 1) return false;
     return true;
   })();

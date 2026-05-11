@@ -101,15 +101,15 @@
 
 **관리 상태**: `sections`, `components`, `sectionId`, `useDefaultComponent`, `componentId`, `textLayerName`, `positioningMode`, `position ({x:40, y:40})`, `startNumber (1)`, `status ('idle'|'loading'|'error'|'done')`, `errorMessage`
 
-- [ ] `usePluginBridge.test.ts` 먼저 작성 (마운트 시 바인딩, `section-list` 수신, `isValid` 조건별)
-- [ ] UIBridge 인스턴스 생성 + `listen()` 호출 (useEffect)
-- [ ] `on('section-list')` → `sections` 상태 업데이트
-- [ ] `on('component-list')` → `components` 상태 업데이트
-- [ ] `on('done')` → `status: 'done'` (Toast 표시 후 `'idle'` 복귀)
-- [ ] `on('error')` → `status: 'error'` + `errorMessage` 업데이트
-- [ ] `isValid` 유효성 검사: `sectionId` 필수, `useDefaultComponent=false` 시 `componentId`·`textLayerName` 필수, `positioningMode='ABSOLUTE'` 시 `position.x`·`position.y` 유효한 숫자, `startNumber >= 1`
-- [ ] `onApply`, `onRefresh`, `onRemove` — `buildMold()` 조립 후 `bridge.send()` 호출
-- [ ] 테스트 통과 확인
+- [x] `usePluginBridge.test.ts` 먼저 작성 (마운트 시 바인딩, `section-list` 수신, `isValid` 조건별)
+- [x] UIBridge 인스턴스 생성 + `listen()` 호출 (useEffect)
+- [x] `on('section-list')` → `sections` 상태 업데이트
+- [x] `on('component-list')` → `components` 상태 업데이트
+- [x] `on('done')` → `status: 'done'` (Toast 표시 후 `'idle'` 복귀)
+- [x] `on('error')` → `status: 'error'` + `errorMessage` 업데이트
+- [x] `isValid` 유효성 검사: `sectionId` 필수, `useDefaultComponent=false` 시 `componentId`·`textLayerName` 필수, `positioningMode='ABSOLUTE'` 시 `position.x`·`position.y` 유효한 숫자, `startNumber >= 1`
+- [x] `onApply`, `onRefresh`, `onRemove` — `buildMold()` 조립 후 `bridge.send()` 호출
+- [x] 테스트 통과 확인
 
 ### 2-3. 공통 UI 컴포넌트 (`src/ui/components/common/`)
 

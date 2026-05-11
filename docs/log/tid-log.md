@@ -32,3 +32,6 @@
 
 1. pre-commit 설정 추가: develop에 자꾸 커밋하는 실수하여 이를 차단 & lint, test 실행하도록
 2. sandbox 코드 - layered architecture로 구조 구체화. 구현 실행.
+3. ui part plan 짜기 - 2번 이상 사용하는 컴포넌트 공통 컴포넌트화 하도록 변경, FE 테스팅 환경 구축
+
+## 260510
